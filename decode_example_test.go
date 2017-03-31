@@ -45,6 +45,23 @@ func ExampleDecode() {
 	// Output: foo bar
 }
 
+func ExampleTagName() {
+	var item struct {
+		Value string `foo:"item"`
+	}
+
+	err := Decode(&item, map[string]interface{}{
+		"item": "hello",
+	}, TagName("foo"))
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(item.Value)
+	// Output: hello
+}
+
 type StringSet map[string]struct{}
 
 func (ss *StringSet) Decode(decode Into) error {
