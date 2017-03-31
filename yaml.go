@@ -42,7 +42,9 @@ const _yamlTagName = "yaml"
 // 	mapdecode.Decode(&x, data, mapdecode.YAML())
 //
 // Caveat: None of the go-yaml flags are supported. Only the attribute name
-// changes will be respected.
+// changes will be respected. Further, note that go-yaml ignores unused
+// attributes but mapdecode fails on unused attributes by default. Use
+// IgnoreUnused to cusotmize this behavior.
 func YAML() Option {
 	return func(o *options) {
 		o.TagName = _yamlTagName

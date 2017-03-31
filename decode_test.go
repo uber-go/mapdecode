@@ -81,6 +81,7 @@ func TestDecode(t *testing.T) {
 	tests := []struct {
 		desc string
 		give interface{}
+		opts []Option
 
 		want       someStruct
 		wantErrors []string
@@ -166,12 +167,22 @@ func TestDecode(t *testing.T) {
 			give: map[interface{}]interface{}{"ptrToTimeout": "4s2ms"},
 			want: someStruct{PtrToTimeout: &someTimeout},
 		},
+		{
+			desc:       "unused",
+			give:       map[string]interface{}{"foo": "bar"},
+			wantErrors: []string{"invalid keys: foo"},
+		},
+		{
+			desc: "ignore unused",
+			give: map[string]interface{}{"foo": "bar"},
+			opts: []Option{IgnoreUnused(true)},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
 			var dest someStruct
-			err := Decode(&dest, tt.give)
+			err := Decode(&dest, tt.give, tt.opts...)
 
 			if len(tt.wantErrors) == 0 {
 				assert.NoError(t, err, "expected success")
