@@ -49,8 +49,9 @@ import (
 const _defaultTagName = "mapdecode"
 
 type options struct {
-	TagName     string
-	Unmarshaler unmarshaler
+	TagName      string
+	IgnoreUnused bool
+	Unmarshaler  unmarshaler
 }
 
 // Option customizes the behavior of Decode.
@@ -61,6 +62,14 @@ type Option func(*options)
 func TagName(name string) Option {
 	return func(o *options) {
 		o.TagName = name
+	}
+}
+
+// IgnoreUnused specifies whether we should ignore unused attributes in YAML.
+// By default, decoding will fail if an unused attribute is encountered.
+func IgnoreUnused(ignore bool) Option {
+	return func(o *options) {
+		o.IgnoreUnused = ignore
 	}
 }
 
@@ -118,7 +127,7 @@ func Decode(dest, src interface{}, os ...Option) error {
 func decodeFrom(opts *options, src interface{}) Into {
 	return func(dest interface{}) error {
 		cfg := mapstructure.DecoderConfig{
-			ErrorUnused: true,
+			ErrorUnused: !opts.IgnoreUnused,
 			Result:      dest,
 			DecodeHook: mapstructure.ComposeDecodeHookFunc(
 				mapstructure.StringToTimeDurationHookFunc(),
