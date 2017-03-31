@@ -45,9 +45,24 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-const _tagName = "mapdecode"
+const _defaultTagName = "mapdecode"
 
 var _typeOfDecoder = reflect.TypeOf((*Decoder)(nil)).Elem()
+
+type options struct {
+	TagName string
+}
+
+// Option customizes the behavior of Decode.
+type Option func(*options)
+
+// TagName changes the name of the struct tag under which field names are
+// expected.
+func TagName(name string) Option {
+	return func(o *options) {
+		o.TagName = name
+	}
+}
 
 // Decode from src into dest where dest is a pointer to the value being
 // decoded.
@@ -63,7 +78,7 @@ var _typeOfDecoder = reflect.TypeOf((*Decoder)(nil)).Elem()
 // 	err := Decode(&item, map[string]string{"key": "some key", "Value": "some value"})
 //
 // The name of the field in the map may be customized with the `mapdecode`
-// tag.
+// tag. (Use the TagName option to change the name of the tag.)
 //
 // 	var item struct {
 // 		Key   string `mapdecode:"name"`
@@ -74,8 +89,12 @@ var _typeOfDecoder = reflect.TypeOf((*Decoder)(nil)).Elem()
 //
 // The destination type or any subtype may implement the Decoder interface to
 // customize how it gets decoded.
-func Decode(dest, src interface{}) error {
-	return decodeFrom(src)(dest)
+func Decode(dest, src interface{}, os ...Option) error {
+	opts := options{TagName: _defaultTagName}
+	for _, o := range os {
+		o(&opts)
+	}
+	return decodeFrom(&opts, src)(dest)
 }
 
 // Decoder is any type which has custom decoding logic. Types may implement
@@ -154,16 +173,16 @@ type Into func(dest interface{}) error
 
 // decodeFrom builds a decode Into function that reads the given value into
 // the destination.
-func decodeFrom(src interface{}) Into {
+func decodeFrom(opts *options, src interface{}) Into {
 	return func(dest interface{}) error {
 		cfg := mapstructure.DecoderConfig{
 			ErrorUnused: true,
 			Result:      dest,
 			DecodeHook: mapstructure.ComposeDecodeHookFunc(
 				mapstructure.StringToTimeDurationHookFunc(),
-				decoderDecodeHook,
+				decoderDecodeHook(opts),
 			),
-			TagName: _tagName,
+			TagName: opts.TagName,
 		}
 
 		decoder, err := mapstructure.NewDecoder(&cfg)
@@ -175,26 +194,29 @@ func decodeFrom(src interface{}) Into {
 	}
 }
 
-// decoderDecodeHook is a DecodeHook for mapstructure which recognizes types
-// that implement the Decoder interface.
-func decoderDecodeHook(from, to reflect.Type, data interface{}) (interface{}, error) {
-	if data == nil {
-		return data, nil
+// decoderDecodeHook builds a DecodeHook for mapstructure which recognizes
+// types that implement the Decoder interface.
+func decoderDecodeHook(opts *options) mapstructure.DecodeHookFuncType {
+	return func(from, to reflect.Type, data interface{}) (interface{}, error) {
+		if data == nil {
+			return data, nil
+		}
+		out, err := _decoderDecodeHook(opts, from, to, reflect.ValueOf(data))
+		return out.Interface(), err
 	}
-	out, err := _decoderDecodeHook(from, to, reflect.ValueOf(data))
-	return out.Interface(), err
 }
 
-func _decoderDecodeHook(from, to reflect.Type, data reflect.Value) (reflect.Value, error) {
+func _decoderDecodeHook(
+	opts *options, from, to reflect.Type, data reflect.Value) (reflect.Value, error) {
 	// Get rid of pointers in either direction. This lets us parse **foo into
 	// a foo where *foo implements Decoder, for example.
 	switch {
 	case from == to:
 		return data, nil
 	case from.Kind() == reflect.Ptr: // *foo => foo
-		return _decoderDecodeHook(from.Elem(), to, data.Elem())
+		return _decoderDecodeHook(opts, from.Elem(), to, data.Elem())
 	case to.Kind() == reflect.Ptr: // foo => *foo
-		out, err := _decoderDecodeHook(from, to.Elem(), data)
+		out, err := _decoderDecodeHook(opts, from, to.Elem(), data)
 		if err != nil {
 			return out, err
 		}
@@ -222,7 +244,7 @@ func _decoderDecodeHook(from, to reflect.Type, data reflect.Value) (reflect.Valu
 	// 	err := value.Decode(...)
 	// 	return *value, err
 	value := reflect.New(to)
-	err := value.Interface().(Decoder).Decode(decodeFrom(data.Interface()))
+	err := value.Interface().(Decoder).Decode(decodeFrom(opts, data.Interface()))
 	if err != nil {
 		err = fmt.Errorf("could not decode %v from %v: %v", to, from, err)
 	}
