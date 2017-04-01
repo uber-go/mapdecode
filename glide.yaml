@@ -2,6 +2,7 @@ package: github.com/uber-go/mapdecode
 import:
 - package: github.com/mitchellh/mapstructure
 - package: go.uber.org/multierr
+  version: ~0.1
 testImport:
 - package: github.com/stretchr/testify
   subpackages:
