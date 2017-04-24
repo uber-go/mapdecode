@@ -42,7 +42,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/mitchellh/mapstructure"
+	"github.com/uber-go/mapdecode/internal/mapstructure"
+
 	"go.uber.org/multierr"
 )
 
