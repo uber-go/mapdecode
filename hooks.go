@@ -27,7 +27,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mitchellh/mapstructure"
+	"github.com/uber-go/mapdecode/internal/mapstructure"
+
 	"go.uber.org/multierr"
 )
 
