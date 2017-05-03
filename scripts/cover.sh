@@ -37,4 +37,6 @@ for pkg in "$@"; do
 		-v "$pkg"
 done
 
-gocovmerge "$COVER"/*.out > cover.out
+gocovmerge "$COVER"/*.out \
+	| grep -v /internal/mapstructure \
+	> cover.out
