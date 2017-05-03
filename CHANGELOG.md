@@ -1,7 +1,7 @@
 Releases
 ========
 
-v0.2.0 (unreleased)
+v0.2.0 (2017-05-03)
 -------------------
 
 -   Added `DecodeHook` to intercept values before they are decoded.
