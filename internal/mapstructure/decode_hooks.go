@@ -38,8 +38,6 @@ func DecodeHookExec(
 	raw DecodeHookFunc,
 	from reflect.Type, to reflect.Type,
 	data interface{}) (interface{}, error) {
-	// Build our arguments that reflect expects
-
 	switch f := typedDecodeHook(raw).(type) {
 	case DecodeHookFuncType:
 		return f(from, to, data)
