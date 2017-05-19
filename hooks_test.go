@@ -65,6 +65,45 @@ func TestMultipleFieldHooks(t *testing.T) {
 	assert.Equal(t, 42, dest.Int)
 }
 
+func TestEmbeddedFieldHooks(t *testing.T) {
+	type subDest struct {
+		Int int
+	}
+	var dest struct {
+		subDest
+	}
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	hook1 := newMockFieldHook(mockCtrl)
+	hook2 := newMockFieldHook(mockCtrl)
+
+	typeOfInt := reflect.TypeOf(42)
+
+	hook1.
+		Expect(_typeOfEmptyInterface, structField{
+			Name: "Int",
+			Type: typeOfInt,
+		}, reflectEq{"FOO"}).
+		Return(valueOf("BAR"), nil)
+
+	hook2.
+		Expect(reflect.TypeOf(""), structField{
+			Name: "Int",
+			Type: typeOfInt,
+		}, reflectEq{"BAR"}).
+		Return(valueOf(42), nil)
+
+	err := Decode(&dest, map[string]interface{}{"int": "FOO"},
+		FieldHook(hook1.Hook()),
+		FieldHook(hook2.Hook()),
+	)
+	require.NoError(t, err)
+
+	assert.Equal(t, 42, dest.Int)
+}
+
 func TestMultipleDecodeHooks(t *testing.T) {
 	type myStruct struct{ String string }
 

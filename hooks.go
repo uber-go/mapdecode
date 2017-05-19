@@ -245,7 +245,7 @@ func getMapUpdates(destType reflect.Type, srcData reflect.Value, hook FieldHookF
 	updates := make(map[interface{}]interface{})
 	var errors []error
 
-	decodableFields := getDecodableStructFields(destType)
+	decodableFields := getDecodableStructFields(destType, tagName)
 	for _, structField := range decodableFields {
 		// This field resolution logic is adapted from mapstructure's own
 		// logic.
@@ -309,7 +309,7 @@ func getMapUpdates(destType reflect.Type, srcData reflect.Value, hook FieldHookF
 	return updates, nil
 }
 
-func getDecodableStructFields(structType reflect.Type) []reflect.StructField {
+func getDecodableStructFields(structType reflect.Type, tagName string) []reflect.StructField {
 	fields := make([]reflect.StructField, 0)
 	for i := 0; i < structType.NumField(); i++ {
 		structField := structType.Field(i)
@@ -318,7 +318,26 @@ func getDecodableStructFields(structType reflect.Type) []reflect.StructField {
 			// into it.
 			continue
 		}
-		// TODO account for embedded struct fields
+
+		// TODO pull in the squash info from the decoder options
+		squash := structField.Anonymous
+		tagParts := strings.Split(structField.Tag.Get(tagName), ",")
+		for _, tag := range tagParts[1:] {
+			switch tag {
+			case "squash":
+				squash = true
+			case "nosquash": // explicit opt-out
+				squash = false
+			default:
+				continue
+			}
+			break
+		}
+
+		if squash && structField.Type.Kind() == reflect.Struct {
+			fields = append(fields, getDecodableStructFields(structField.Type, tagName)...)
+			continue
+		}
 		fields = append(fields, structField)
 	}
 	return fields
