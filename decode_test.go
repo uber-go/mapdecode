@@ -238,7 +238,11 @@ func TestDecode(t *testing.T) {
 }
 
 func TestFieldHook(t *testing.T) {
+	type embeddedStruct struct {
+		SomeOtherInt int
+	}
 	type myStruct struct {
+		embeddedStruct
 		SomeInt          int
 		SomeString       string
 		PtrToPtrToString **string
@@ -293,12 +297,12 @@ func TestFieldHook(t *testing.T) {
 				"PtrToPtrToString": "hello",
 			},
 			setupHook: func(h *mockFieldHook) {
-				h.Expect(_typeOfEmptyInterface, structField{
+				h.Expect(structField{
 					Name: "SomeInt",
 					Type: typeOfInt,
 				}, reflectEq{1}).Return(valueOf(42), nil)
 
-				h.Expect(_typeOfEmptyInterface, structField{
+				h.Expect(structField{
 					Name: "PtrToPtrToString",
 					Type: typeOfPtrPtrString,
 				}, reflectEq{"hello"}).Return(valueOf("world"), nil)
@@ -309,11 +313,28 @@ func TestFieldHook(t *testing.T) {
 			},
 		},
 		{
+			desc: "embedded updates",
+			give: map[string]interface{}{
+				"someOtherInt": 1,
+			},
+			setupHook: func(h *mockFieldHook) {
+				h.Expect(structField{
+					Name: "SomeOtherInt",
+					Type: typeOfInt,
+				}, reflectEq{1}).Return(valueOf(42), nil)
+			},
+			want: myStruct{
+				embeddedStruct: embeddedStruct{
+					SomeOtherInt: 42,
+				},
+			},
+		},
+		{
 			desc:     "field name override",
 			give:     map[string]interface{}{"yamlKey": "foo"},
 			giveOpts: []Option{YAML()},
 			setupHook: func(h *mockFieldHook) {
-				h.Expect(_typeOfEmptyInterface, structField{
+				h.Expect(structField{
 					Name: "YAMLField",
 					Type: typeOfString,
 					Tag:  `yaml:"yamlKey"`,
@@ -326,7 +347,7 @@ func TestFieldHook(t *testing.T) {
 			give:     map[string]interface{}{"YAMLKEY": "foo"},
 			giveOpts: []Option{YAML()},
 			setupHook: func(h *mockFieldHook) {
-				h.Expect(_typeOfEmptyInterface, structField{
+				h.Expect(structField{
 					Name: "YAMLField",
 					Type: typeOfString,
 					Tag:  `yaml:"yamlKey"`,
@@ -341,12 +362,12 @@ func TestFieldHook(t *testing.T) {
 				"PtrToPtrToString": "hello",
 			},
 			setupHook: func(h *mockFieldHook) {
-				h.Expect(_typeOfEmptyInterface, structField{
+				h.Expect(structField{
 					Name: "SomeInt",
 					Type: typeOfInt,
 				}, reflectEq{1}).Return(reflect.Value{}, errors.New("great sadness"))
 
-				h.Expect(_typeOfEmptyInterface, structField{
+				h.Expect(structField{
 					Name: "PtrToPtrToString",
 					Type: typeOfPtrPtrString,
 				}, reflectEq{"hello"}).Return(reflect.Value{}, errors.New("more sadness"))
@@ -363,12 +384,12 @@ func TestFieldHook(t *testing.T) {
 				"someString": 3,
 			},
 			setupHook: func(h *mockFieldHook) {
-				h.Expect(typeOfInt, structField{
+				h.Expect(structField{
 					Name: "SomeInt",
 					Type: typeOfInt,
 				}, reflectEq{42}).Return(reflect.ValueOf(100), nil)
 
-				h.Expect(typeOfInt, structField{
+				h.Expect(structField{
 					Name: "SomeString",
 					Type: typeOfString,
 				}, reflectEq{3}).Return(reflect.ValueOf("hello"), nil)

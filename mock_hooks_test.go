@@ -71,12 +71,12 @@ func (m *mockFieldHook) Hook() FieldHookFunc {
 }
 
 // Expect sets up a call expectation on the hook.
-func (m *mockFieldHook) Expect(from, to, data interface{}) *gomock.Call {
-	return m.c.RecordCall(m, "Call", from, to, data)
+func (m *mockFieldHook) Expect(dest, srcData interface{}) *gomock.Call {
+	return m.c.RecordCall(m, "Call", dest, srcData)
 }
 
-func (m *mockFieldHook) Call(from reflect.Type, to reflect.StructField, data reflect.Value) (reflect.Value, error) {
-	results := m.c.Call(m, "Call", from, to, data)
+func (m *mockFieldHook) Call(dest reflect.StructField, srcData reflect.Value) (reflect.Value, error) {
+	results := m.c.Call(m, "Call", dest, srcData)
 	out := results[0].(reflect.Value)
 	err, _ := results[1].(error)
 	return out, err

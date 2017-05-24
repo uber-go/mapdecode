@@ -43,14 +43,14 @@ func TestMultipleFieldHooks(t *testing.T) {
 	typeOfInt := reflect.TypeOf(42)
 
 	hook1.
-		Expect(_typeOfEmptyInterface, structField{
+		Expect(structField{
 			Name: "Int",
 			Type: typeOfInt,
 		}, reflectEq{"FOO"}).
 		Return(valueOf("BAR"), nil)
 
 	hook2.
-		Expect(reflect.TypeOf(""), structField{
+		Expect(structField{
 			Name: "Int",
 			Type: typeOfInt,
 		}, reflectEq{"BAR"}).

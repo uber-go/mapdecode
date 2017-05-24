@@ -40,6 +40,10 @@ type DecodeHookFuncType func(reflect.Type, reflect.Type, interface{}) (interface
 // source and target types.
 type DecodeHookFuncKind func(reflect.Kind, reflect.Kind, interface{}) (interface{}, error)
 
+// FieldHookFunc is the callback function that can be used to alter
+// StructFields before they are decoded into the struct objects.
+type FieldHookFunc func(reflect.StructField, reflect.Value) (reflect.Value, error)
+
 // DecoderConfig is the configuration that is used to create a new decoder
 // and allows customization of various aspects of decoding.
 type DecoderConfig struct {
@@ -50,6 +54,15 @@ type DecoderConfig struct {
 	// If an error is returned, the entire decode will fail with that
 	// error.
 	DecodeHook DecodeHookFunc
+
+	// FieldHook, if set, will be called before decoding StructFields
+	// from the source data. This lets you read struct tags and apply
+	// mutations to the values before they're set down onto the
+	// resulting struct.
+	//
+	// If an error is returned, the entire decode will fail with that
+	// error.
+	FieldHook FieldHookFunc
 
 	// If ErrorUnused is true, then it is an error for there to exist
 	// keys in the original map that were unused in the decoding process
@@ -804,6 +817,17 @@ func (d *Decoder) decodeStruct(name string, data interface{}, val reflect.Value)
 		// don't dot-join the fields.
 		if name != "" {
 			fieldName = fmt.Sprintf("%s.%s", name, fieldName)
+		}
+
+		// Apply struct field hooks
+		if d.config.FieldHook != nil {
+			newValue, err := d.config.FieldHook(*fieldType, rawMapVal)
+			if err != nil {
+				errors = appendErrors(errors, fmt.Errorf(
+					"error reading into field %q: %v", fieldName, err))
+				continue
+			}
+			rawMapVal = newValue
 		}
 
 		if err := d.decode(fieldName, rawMapVal.Interface(), field); err != nil {
