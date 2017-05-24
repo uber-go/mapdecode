@@ -238,7 +238,11 @@ func TestDecode(t *testing.T) {
 }
 
 func TestFieldHook(t *testing.T) {
+	type embeddedStruct struct {
+		SomeOtherInt int
+	}
 	type myStruct struct {
+		embeddedStruct
 		SomeInt          int
 		SomeString       string
 		PtrToPtrToString **string
@@ -306,6 +310,23 @@ func TestFieldHook(t *testing.T) {
 			want: myStruct{
 				SomeInt:          42,
 				PtrToPtrToString: ptrToPtrToString("world"),
+			},
+		},
+		{
+			desc: "embedded updates",
+			give: map[string]interface{}{
+				"someOtherInt":          1,
+			},
+			setupHook: func(h *mockFieldHook) {
+				h.Expect(structField{
+					Name: "SomeOtherInt",
+					Type: typeOfInt,
+				}, reflectEq{1}).Return(valueOf(42), nil)
+			},
+			want: myStruct{
+				embeddedStruct: embeddedStruct{
+					SomeOtherInt: 42,
+				},
 			},
 		},
 		{
