@@ -1,6 +1,26 @@
 Releases
 ========
 
+v0.3.0 (2017-05-24)
+-------------------
+
+-   Implement `FieldHook`s natively in mapstructure
+-   **Breaking**: Changed function signature of `FieldHook` to remove unecessary
+    `from` parameter.
+
+    Before:
+
+    ```go
+    func(from reflect.Type, to reflect.StructField, data reflect.Value) (reflect.Value, error)
+    ```
+
+    After:
+
+    ```go
+    func(dest reflect.StructField, srcData reflect.Value) (reflect.Value, error)
+    ```
+
+
 v0.2.0 (2017-05-03)
 -------------------
 
