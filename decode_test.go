@@ -315,7 +315,7 @@ func TestFieldHook(t *testing.T) {
 		{
 			desc: "embedded updates",
 			give: map[string]interface{}{
-				"someOtherInt":          1,
+				"someOtherInt": 1,
 			},
 			setupHook: func(h *mockFieldHook) {
 				h.Expect(structField{
