@@ -163,11 +163,12 @@ func Decode(dest, src interface{}, os ...Option) error {
 // the destination.
 func decodeFrom(opts *options, src interface{}) Into {
 	return func(dest interface{}) error {
+		var fieldHooks FieldHookFunc
 		hooks := opts.DecodeHooks
 
 		// fieldHook goes first because it may replace the source data map.
 		if len(opts.FieldHooks) > 0 {
-			hooks = append(hooks, fieldHook(opts))
+			fieldHooks = composeFieldHooks(opts.FieldHooks)
 		}
 
 		hooks = append(
@@ -186,7 +187,8 @@ func decodeFrom(opts *options, src interface{}) Into {
 			DecodeHook: fromDecodeHookFunc(
 				supportPointers(composeDecodeHooks(hooks)),
 			),
-			TagName: opts.TagName,
+			FieldHook: mapstructure.FieldHookFunc(fieldHooks),
+			TagName:   opts.TagName,
 		}
 
 		decoder, err := mapstructure.NewDecoder(&cfg)
