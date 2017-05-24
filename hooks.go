@@ -35,8 +35,7 @@ var (
 )
 
 // FieldHookFunc is a hook called while decoding a specific struct field. It
-// receives the source type, information about the target field, and the
-// source data.
+// receives information about the target field, and the source data.
 type FieldHookFunc func(dest reflect.StructField, srcData reflect.Value) (reflect.Value, error)
 
 func composeFieldHooks(hooks []FieldHookFunc) FieldHookFunc {
