@@ -1,7 +1,7 @@
 Releases
 ========
 
-v0.3.1 (unreleased)
+v0.3.1 (2017-05-31)
 -------------------
 
 -   Support multierr 1.0.
