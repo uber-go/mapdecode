@@ -1,7 +1,7 @@
 Releases
 ========
 
-v1.0.0 (unreleased)
+v1.0.0 (2017-08-29)
 -------------------
 
 No changes since v0.3.1. This release is committing to making no breaking
