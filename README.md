@@ -24,7 +24,7 @@ This package relies heavily on [mapstructure] for much of its functionality.
 
 ## Status
 
-Beta
+Stable: No breaking changes will be made before 2.0.
 
 -------------------------------------------------------------------------------
 
