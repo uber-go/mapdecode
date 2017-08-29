@@ -1,6 +1,13 @@
 Releases
 ========
 
+v1.0.0 (unreleased)
+-------------------
+
+No changes since v0.3.1. This release is committing to making no breaking
+changes to the current API in the 1.X series.
+
+
 v0.3.1 (2017-05-31)
 -------------------
 
