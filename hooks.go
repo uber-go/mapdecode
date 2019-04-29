@@ -29,10 +29,7 @@ import (
 	"github.com/uber-go/mapdecode/internal/mapstructure"
 )
 
-var (
-	_typeOfDuration       = reflect.TypeOf(time.Duration(0))
-	_typeOfEmptyInterface = reflect.TypeOf((*interface{})(nil)).Elem()
-)
+var _typeOfDuration = reflect.TypeOf(time.Duration(0))
 
 // FieldHookFunc is a hook called while decoding a specific struct field. It
 // receives information about the target field, and the source data.

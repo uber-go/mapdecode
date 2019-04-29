@@ -252,6 +252,9 @@ func TestFieldHook(t *testing.T) {
 		unexportedField string
 	}
 
+	// To prevent unused field errors.
+	_ = myStruct{unexportedField: "foo"}
+
 	typeOfInt := reflect.TypeOf(0)
 	typeOfString := reflect.TypeOf("hi")
 	typeOfPtrPtrString := reflect.PtrTo(reflect.PtrTo(typeOfString))
