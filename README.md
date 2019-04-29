@@ -33,7 +33,7 @@ Released under the [MIT License].
 [MIT License]: LICENSE.txt
 [doc-img]: https://godoc.org/github.com/uber-go/mapdecode?status.svg
 [doc]: https://godoc.org/github.com/uber-go/mapdecode
-[ci-img]: https://travis-ci.org/uber-go/mapdecode.svg?branch=master
+[ci-img]: https://travis-ci.com/uber-go/mapdecode.svg?branch=master
 [cov-img]: https://coveralls.io/repos/github/uber-go/mapdecode/badge.svg?branch=master
-[ci]: https://travis-ci.org/uber-go/mapdecode
+[ci]: https://travis-ci.com/uber-go/mapdecode
 [cov]: https://coveralls.io/github/uber-go/mapdecode?branch=master
